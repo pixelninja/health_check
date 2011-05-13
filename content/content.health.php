@@ -69,6 +69,7 @@
 			$fileperms = fileperms($dir);
 			$perms = substr(sprintf("%o", $fileperms), -4);
 			$col_dir = Widget::TableData(General::sanitize('/manifest/cache'));
+			$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
 			$col_perms = Widget::TableData(General::sanitize($perms));
 			$col_info = Widget::TableData(General::sanitize(info($fileperms)));
 			if($perms != '0777') {
@@ -95,6 +96,7 @@
 			$fileperms = fileperms($dir);
 			$perms = substr(sprintf("%o", $fileperms), -4);
 			$col_dir = Widget::TableData(General::sanitize('/manifest/tmp'));
+			$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
 			$col_perms = Widget::TableData(General::sanitize($perms));
 			$col_info = Widget::TableData(General::sanitize(info($fileperms)));
 			if($perms != '0777') {
@@ -122,6 +124,7 @@
 				$fileperms = fileperms($dir);
 				$perms = substr(sprintf("%o", $fileperms), -4);
 				$col_dir = Widget::TableData(General::sanitize($destination['destination']));
+				$col_dir->appendChild(Widget::Input("item[{$destination['destination']}]",null, 'checkbox'));
 				$col_perms = Widget::TableData(General::sanitize($perms));
 				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
 				if($perms != '0777') {
@@ -157,12 +160,40 @@
 			
 			$options = array(
 				array(null, false, 'With Selected...'),
-				array('change', false, 'Update permissions')									
+				array('0777', false, 'Update to 0777'),
+				array('0755', false, 'Update to 0755'),
+				array('0750', false, 'Update to 0750'),
+				array('0644', false, 'Update to 0644'),
+				array('0600', false, 'Update to 0600')									
 			);
 
 			$actions->appendChild(Widget::Select('with-selected', $options));
 			$actions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
 			
 			$this->Form->appendChild($actions);
+		}
+		
+		public function __actionIndex() {
+			$checked = ((isset($_POST['item']) && is_array($_POST['item'])) ? array_keys($_POST['item']) : null);
+			
+			if (is_array($checked) and !empty($checked)) {
+				switch ($_POST['with-selected']) {
+					case '0777':
+						chmod(getcwd() . $checked[0], 0777);
+						break;
+					case '0755':
+						chmod(getcwd() . $checked[0], 0755);
+						break;
+					case '0750':
+						chmod(getcwd() . $checked[0], 0750);
+						break;
+					case '0644':
+						chmod(getcwd() . $checked[0], 0644);
+						break;
+					case '0600':
+						chmod(getcwd() . $checked[0], 0600);
+						break;
+				}
+			}
 		}
 	}
