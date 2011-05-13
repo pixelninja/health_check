@@ -23,3 +23,4 @@ It lists your manifest/cache and manifest/tmp folders as well as any directories
 - **0777** Everything for everyone
 
 You can change the permissions by selecting the item, clicking the 'with selected...' checkbox and selecting the permissions you need (This will almost always be 0777). Click apply and it will update for you.
+**Note this will probably not work on the manifest directories, which will need changing manually**
