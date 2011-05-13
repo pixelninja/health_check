@@ -21,3 +21,5 @@ It lists your manifest/cache and manifest/tmp folders as well as any directories
 - **0750** Everything for owner, read and execute for owner's group
 - **0755** Everything for owner, read and execute for others
 - **0777** Everything for everyone
+
+You can change the permissions by selecting the item, clicking the 'with selected...' checkbox and selecting the permissions you need (This will almost always be 0777). Click apply and it will update for you.
