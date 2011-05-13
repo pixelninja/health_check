@@ -20,7 +20,7 @@
 				array(
 					'location' => 'Blueprints',
 					'name'	=> 'Health Check',
-					'link'	=> '/health/',
+					'link'	=> '/directories/',
 				),
 			);
 		}
@@ -38,7 +38,7 @@
 			$callback = Symphony::Engine()->getPageCallback();
 			
 			// Append assets
-			if($callback['driver'] == 'health') {
+			if($callback['driver'] == 'directories') {
 				Symphony::Engine()->Page->addStylesheetToHead(URL . '/extensions/health_check/assets/healthcheck.publish.css', 'screen');
 			}
 			

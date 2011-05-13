@@ -2,7 +2,7 @@
 	
 	require_once(TOOLKIT . '/class.administrationpage.php');
 	
-	Class ContentExtensionHealth_CheckHealth extends AdministrationPage{
+	Class ContentExtensionHealth_CheckDirectories extends AdministrationPage{
 		
 		public function view() {		
 			// fetch all entries with upload fields
