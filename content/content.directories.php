@@ -86,7 +86,7 @@
 					array(
 						$col_dir, 
 						$col_perms,
-						col_info
+						$col_info
 					)
 				);
 			}
