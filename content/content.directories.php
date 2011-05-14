@@ -4,14 +4,37 @@
 	
 	Class ContentExtensionHealth_CheckDirectories extends AdministrationPage{
 		
-		public function view() {		
+		public function __viewIndex() {		
 			// fetch all entries with upload fields
-			$destinations = Symphony::Database()->fetch("SELECT destination COLLATE utf8_general_ci AS destination FROM tbl_fields_uniqueupload UNION ALL SELECT destination FROM tbl_fields_upload ORDER BY destination ASC");
-			
-			$this->setPageType('table');
+			$extensionManager = new ExtensionManager($this->_Parent);
+			if($extensionManager->fetchStatus('uniqueuploadfield') == EXTENSION_ENABLED) {
+				$destinations = Symphony::Database()->fetch("SELECT destination COLLATE utf8_general_ci AS destination FROM tbl_fields_upload UNION ALL SELECT destination FROM tbl_fields_uniqueupload ORDER BY destination ASC");
+			} else {
+				$destinations = Symphony::Database()->fetch("SELECT destination FROM tbl_fields_upload ORDER BY destination ASC");
+			}
+
+			$this->setPageType('index');
 			$this->setTitle(__('Directory Health Check'));
 
-			$this->appendSubheading('Health Check');
+
+			$this->appendSubheading(__('Health Check'));
+
+			if(is_dir(getcwd() . __('/manifest/cache')) == false || is_dir(getcwd() . __('/manifest/tmp')) == false) {
+				$button = new XMLElement('input');
+				$button->setAttribute('type','submit');
+				$button->setAttribute('class','button');
+				if(is_dir(getcwd() . __('/manifest/cache')) == false && is_dir(getcwd() . __('/manifest/tmp')) == false) {
+					$button->setAttribute('name','action[create-tmp-cache]');
+					$button->setAttribute('value',__('Create Cache/Tmp folders'));
+				} elseif(is_dir(getcwd() . __('/manifest/cache')) == false && is_dir(getcwd() . __('/manifest/tmp')) != false) {
+					$button->setAttribute('name','action[create-cache]');
+					$button->setAttribute('value',__('Create Cache folder'));
+				} elseif(is_dir(getcwd() . __('/manifest/cache')) != false && is_dir(getcwd() . __('/manifest/tmp')) == false) {
+					$button->setAttribute('name','action[create-tmp]');
+					$button->setAttribute('value',__('Create Tmp folder'));
+				}
+				$this->Form->appendChild($button);
+			}
 
 			$table = new XMLElement('table');
 
@@ -65,14 +88,38 @@
 			}
 			
 			//manifest/cache
-			$dir = getcwd() . '/manifest/cache';
-			$fileperms = fileperms($dir);
-			$perms = substr(sprintf("%o", $fileperms), -4);
-			$col_dir = Widget::TableData(General::sanitize('/manifest/cache'));
-			$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
-			$col_perms = Widget::TableData(General::sanitize($perms));
-			$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-			if($perms != '0777') {
+
+			$dir = getcwd() . __('/manifest/cache');
+			if(is_dir($dir) == true) {
+				$fileperms = fileperms($dir);
+				$perms = substr(sprintf("%o", $fileperms), -4);
+				$col_dir = Widget::TableData(General::sanitize(__('/manifest/cache')));
+				$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
+				$col_perms = Widget::TableData(General::sanitize($perms));
+				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
+				if($perms != '0777') {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						),
+						'invalid'
+					);
+				} else {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						)
+					);
+				}
+			} else {
+				$col_dir = Widget::TableData(General::sanitize(__('/manifest/cache')));
+				$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
+				$col_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
+				$col_info = Widget::TableData(General::sanitize());
 				$tableBody[] = Widget::TableRow(
 					array(
 						$col_dir, 
@@ -80,26 +127,41 @@
 						$col_info
 					),
 					'invalid'
-				);
-			} else {
-				$tableBody[] = Widget::TableRow(
-					array(
-						$col_dir, 
-						$col_perms,
-						$col_info
-					)
 				);
 			}
 			
 			//manifest/tmp
-			$dir = getcwd() . '/manifest/tmp';
-			$fileperms = fileperms($dir);
-			$perms = substr(sprintf("%o", $fileperms), -4);
-			$col_dir = Widget::TableData(General::sanitize('/manifest/tmp'));
-			$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
-			$col_perms = Widget::TableData(General::sanitize($perms));
-			$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-			if($perms != '0777') {
+			$dir = getcwd() . __('/manifest/tmp');
+			if(is_dir($dir) == true) {
+				$fileperms = fileperms($dir);
+				$perms = substr(sprintf("%o", $fileperms), -4);
+				$col_dir = Widget::TableData(General::sanitize(__('/manifest/tmp')));
+				$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
+				$col_perms = Widget::TableData(General::sanitize($perms));
+				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
+				if($perms != '0777') {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						),
+						'invalid'
+					);
+				} else {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						)
+					);
+				}
+			} else {
+				$col_dir = Widget::TableData(General::sanitize(__('/manifest/tmp')));
+				$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
+				$col_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
+				$col_info = Widget::TableData(General::sanitize());
 				$tableBody[] = Widget::TableRow(
 					array(
 						$col_dir, 
@@ -107,14 +169,6 @@
 						$col_info
 					),
 					'invalid'
-				);
-			} else {
-				$tableBody[] = Widget::TableRow(
-					array(
-						$col_dir, 
-						$col_perms,
-						$col_info
-					)
 				);
 			}
 
@@ -159,12 +213,12 @@
 			$actions->setAttribute('class', 'actions');
 			
 			$options = array(
-				array(null, false, 'With Selected...'),
-				array('0777', false, 'Update to 0777'),
-				array('0755', false, 'Update to 0755'),
-				array('0750', false, 'Update to 0750'),
-				array('0644', false, 'Update to 0644'),
-				array('0600', false, 'Update to 0600')									
+				array(null, false, __('With Selected...')),
+				array('0777', false, __('Update to 0777')),
+				array('0755', false, __('Update to 0755')),
+				array('0750', false, __('Update to 0750')),
+				array('0644', false, __('Update to 0644')),
+				array('0600', false, __('Update to 0600'))									
 			);
 
 			$actions->appendChild(Widget::Select('with-selected', $options));
@@ -194,6 +248,15 @@
 						chmod(getcwd() . $checked[0], 0600);
 						break;
 				}
+			}
+
+			if(isset($_POST['action']) == 'create-tmp-cache') {
+				mkdir(getcwd() . '/manifest/tmp', 0777);
+				mkdir(getcwd() . '/manifest/cache', 0777);
+			}elseif(isset($_POST['action']) == 'create-tmp') {
+				mkdir(getcwd() . '/manifest/tmp', 0777);
+			}elseif(isset($_POST['action']) == 'create-cache') {
+				mkdir(getcwd() . '/manifest/cache', 0777);
 			}
 		}
 	}
