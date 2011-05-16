@@ -26,4 +26,4 @@ You can change the permissions by selecting the item, clicking the 'with selecte
 
 Also, if the manifest folders don't exist, a create button will appear in the top right. Use this to create the missing directory.
 
-**NOTE: this will not work if you are not the current user. The current user is the user under which PHP runs. It is probably not the same user you use for normal shell or FTP access. The mode can be changed through this method only by the user who owns the file on most systems. If this is not the case then it will need to be changed via sudo command line or through your Control Panel.**
+**NOTE: The update options will not work if you are not the current user. The current user is the user under which PHP runs. It is probably not the same user you use for normal shell or FTP access. The mode can be changed through this method only by the user who owns the file on most systems. If this is not the case then it will need to be changed via sudo command line or through your Control Panel.**
