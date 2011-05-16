@@ -172,36 +172,47 @@
 				);
 			}
 
+			//array_unique didn't work, so run this function instead
+			function remove_duplicates(array $array){
+				$tmp_array = array();
+
+				foreach($array as $key => $val) {
+					if (!in_array($val, $tmp_array)) {
+						$tmp_array[$key]  = $val;
+					}
+				}
+
+				return $tmp_array;
+			}
+
+			$destinations = remove_duplicates($destinations);
+
 			// Upload directories
 			foreach($destinations as $destination) {
-				//var_dump(array_unique($destination));
-				$i = ++$destination;
-				if(array_unique($destination)) {
-					$dir = getcwd() . $destination['destination'];
-					$fileperms = fileperms($dir);
-					$perms = substr(sprintf("%o", $fileperms), -4);
-					$col_dir = Widget::TableData(General::sanitize($destination['destination']));
-					$col_dir->appendChild(Widget::Input("item[{$destination['destination']}]",null, 'checkbox'));
-					$col_perms = Widget::TableData(General::sanitize($perms));
-					$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-					if($perms != '0777') {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$col_dir, 
-								$col_perms,
-								$col_info
-							),
-							'invalid'
-						);
-					} else {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$col_dir, 
-								$col_perms,
-								$col_info
-							)
-						);
-					}
+				$dir = getcwd() . $destination['destination'];
+				$fileperms = fileperms($dir);
+				$perms = substr(sprintf("%o", $fileperms), -4);
+				$col_dir = Widget::TableData(General::sanitize($destination['destination']));
+				$col_dir->appendChild(Widget::Input("item[{$destination['destination']}]",null, 'checkbox'));
+				$col_perms = Widget::TableData(General::sanitize($perms));
+				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
+				if($perms != '0777') {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						),
+						'invalid'
+					);
+				} else {
+					$tableBody[] = Widget::TableRow(
+						array(
+							$col_dir, 
+							$col_perms,
+							$col_info
+						)
+					);
 				}
 			}
 			
