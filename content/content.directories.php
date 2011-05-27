@@ -44,7 +44,8 @@
 				array(__('Octal Permissions'), 'col'),
 				array(__('Full Permissions'), 'col')
 			);	
-							
+			
+			//This is horrifically awful to look at but it seems to be the only way to change 0777 to xdwrdwrdwr etc		
 			function info($fileperms) {
 				// Socket
 				if (($fileperms & 0xC000) == 0xC000) $info = 's';
@@ -88,7 +89,6 @@
 			}
 			
 			//manifest/cache
-
 			$dir = getcwd() . __('/manifest/cache');
 			if(is_dir($dir) == true) {
 				$fileperms = fileperms($dir);
