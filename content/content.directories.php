@@ -45,7 +45,7 @@
 				array(__('Full Permissions'), 'col')
 			);	
 			
-			//This is horrifically awful to look at but it seems to be the only way to change 0777 to xdwrdwrdwr etc		
+			//This is horrifically awful to look at but it seems to be the only way to change 0777 to drwxrwxrwx etc		
 			function info($fileperms) {
 				// Socket
 				if (($fileperms & 0xC000) == 0xC000) $info = 's';
@@ -86,122 +86,7 @@
 				            (($fileperms & 0x0200) ? 'T' : '-'));
 				
 				return $info;
-			}
-			
-			//manifest/cache
-			$dir = getcwd() . __('/manifest/cache');
-			if(is_dir($dir) == true) {
-				$fileperms = fileperms($dir);
-				$perms = substr(sprintf("%o", $fileperms), -4);
-				$col_dir = Widget::TableData(General::sanitize(__('/manifest/cache')));
-				$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
-				$col_perms = Widget::TableData(General::sanitize($perms));
-				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-				if($perms != '0777') {
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
-						),
-						'invalid'
-					);
-				} else {
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
-						)
-					);
-				}
-			} else {
-				$col_dir = Widget::TableData(General::sanitize(__('/manifest/cache')));
-				$col_dir->appendChild(Widget::Input("item['/manifest/cache']",null, 'checkbox'));
-				$col_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
-				$col_info = Widget::TableData(General::sanitize());
-				$tableBody[] = Widget::TableRow(
-					array(
-						$col_dir, 
-						$col_perms,
-						$col_info
-					),
-					'invalid'
-				);
-			}
-			
-			//manifest/tmp
-			$dir = getcwd() . __('/manifest/tmp');
-			if(is_dir($dir) == true) {
-				$fileperms = fileperms($dir);
-				$perms = substr(sprintf("%o", $fileperms), -4);
-				$col_dir = Widget::TableData(General::sanitize(__('/manifest/tmp')));
-				$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
-				$col_perms = Widget::TableData(General::sanitize($perms));
-				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-				if($perms != '0777') {
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
-						),
-						'invalid'
-					);
-				} else {
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
-						)
-					);
-				}
-			} else {
-				$col_dir = Widget::TableData(General::sanitize(__('/manifest/tmp')));
-				$col_dir->appendChild(Widget::Input("item['/manifest/tmp']",null, 'checkbox'));
-				$col_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
-				$col_info = Widget::TableData(General::sanitize());
-				$tableBody[] = Widget::TableRow(
-					array(
-						$col_dir, 
-						$col_perms,
-						$col_info
-					),
-					'invalid'
-				);
-			}
-
-			// XML importer
-			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) {
-				$dir = getcwd() . __('/workspace/xml-importers');
-				if(is_dir($dir) == true) {
-					$fileperms = fileperms($dir);
-					$perms = substr(sprintf("%o", $fileperms), -4);
-					$col_dir = Widget::TableData(General::sanitize('workspace/xml-importers'));
-					$col_dir->appendChild(Widget::Input("item[/workspace/xml-importers]",null, 'checkbox'));
-					$col_perms = Widget::TableData(General::sanitize($perms));
-					$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-					if($perms != '0777') {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$col_dir, 
-								$col_perms,
-								$col_info
-							),
-							'invalid'
-						);
-					} else {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$col_dir, 
-								$col_perms,
-								$col_info
-							)
-						);
-					}
-				}
-			}
+			}			
 
 			//array_unique didn't work, so run this function instead
 			function remove_duplicates(array $array){
@@ -216,33 +101,49 @@
 				return $tmp_array;
 			}
 
-			$destinations = remove_duplicates($destinations);
-
-			// Upload directories
-			foreach($destinations as $destination) {
-				$dir = getcwd() . $destination['destination'];
-				$fileperms = fileperms($dir);
-				$perms = substr(sprintf("%o", $fileperms), -4);
-				$col_dir = Widget::TableData(General::sanitize($destination['destination']));
-				$col_dir->appendChild(Widget::Input("item[{$destination['destination']}]",null, 'checkbox'));
-				$col_perms = Widget::TableData(General::sanitize($perms));
-				$col_info = Widget::TableData(General::sanitize(info($fileperms)));
-				if($perms != '0777') {
+			$directory = array('/manifest/cache','/manifest/tmp');
+			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
+			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
+		   
+		   	foreach($directory as $dir) {
+				$d = getcwd() . __($dir);
+				if(is_dir($d) == true) {
+					$fileperms = fileperms($d);
+					$perms = substr(sprintf("%o", $fileperms), -4);
+					$td_dir = Widget::TableData(General::sanitize(__($dir)));
+					$td_dir->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
+					$td_perms = Widget::TableData(General::sanitize($perms));
+					$td_info = Widget::TableData(General::sanitize(info($fileperms)));
+					if($perms != '0777') {
+						$tableBody[] = Widget::TableRow(
+							array(
+								$td_dir, 
+								$td_perms,
+								$td_info
+							),
+							'invalid'
+						);
+					} else {
+						$tableBody[] = Widget::TableRow(
+							array(
+								$td_dir, 
+								$td_perms,
+								$td_info
+							)
+						);
+					}
+				} else {
+					$td_dir = Widget::TableData(General::sanitize(__($dir)));
+					$td_dir->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
+					$td_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
+					$td_info = Widget::TableData(General::sanitize());
 					$tableBody[] = Widget::TableRow(
 						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
+							$td_dir, 
+							$td_perms,
+							$td_info
 						),
 						'invalid'
-					);
-				} else {
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_dir, 
-							$col_perms,
-							$col_info
-						)
 					);
 				}
 			}

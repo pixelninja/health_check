@@ -51,9 +51,9 @@
 		
 		public function initaliseAdminPageHead($context) {
 			$callback = Symphony::Engine()->getPageCallback();
-			
+
 			// Append assets
-			if($callback['driver'] == 'directories') {
+			if($callback['driver'] == 'directories' || $callback['classname'] == 'contentExtensionDashboardIndex') {
 				Symphony::Engine()->Page->addStylesheetToHead(URL . '/extensions/health_check/assets/healthcheck.publish.css', 'screen');
 			}
 		}
@@ -71,15 +71,33 @@
 		
 		public function render_panel($context) {
 		    if ($context['type'] != 'health_check_panel') return;
-		
-			require_once(EXTENSIONS . '/health_check/content/content.directories.php');
-			
+
+			$extensionManager = new ExtensionManager($this->_Parent);
+			if($extensionManager->fetchStatus('uniqueuploadfield') == EXTENSION_ENABLED) {
+				$destinations = Symphony::Database()->fetch("SELECT destination COLLATE utf8_general_ci AS destination FROM tbl_fields_upload UNION ALL SELECT destination FROM tbl_fields_uniqueupload ORDER BY destination ASC");
+			} else {
+				$destinations = Symphony::Database()->fetch("SELECT destination FROM tbl_fields_upload ORDER BY destination ASC");
+			}
+
+			function remove_duplicates(array $array){
+				$tmp_array = array();
+
+				foreach($array as $key => $val) {
+					if (!in_array($val, $tmp_array)) {
+						$tmp_array[$key]  = $val;
+					}
+				}
+
+				return $tmp_array;
+			}
+
 			$div = new XMLElement('div');
 			$table = new XMLElement('table');
-			
-		   	//manifest/cache
+
 		   	$dir = array('/manifest/cache','/manifest/tmp');
-		   	
+			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $dir[] =  '/workspace/xml-importers';
+			foreach(remove_duplicates($destinations) as $destination) $dir[] = $destination['destination'];
+
 		   	foreach($dir as $d) {
 				$directory = getcwd() . __($d);
 				if(is_dir($directory) == true) {
@@ -93,15 +111,14 @@
 						$table->appendChild(Widget::TableRow(array($td_directory, $td_perms)));
 					}
 				} else {
-					$directory = Widget::TableData(General::sanitize(__('/manifest/cache')));
+					$directory = Widget::TableData(General::sanitize(__($d)));
 					$perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
 					$table->appendChild(Widget::TableRow(array($directory, $perms),'invalid'));
 				}
 			}
 		   
-			
 			$div->appendChild($table);
-		    
+
 			$context['panel']->appendChild($div);
 		}
 	}
