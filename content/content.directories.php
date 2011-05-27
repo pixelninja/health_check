@@ -172,6 +172,37 @@
 				);
 			}
 
+			// XML importer
+			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) {
+				$dir = getcwd() . __('/workspace/xml-importers');
+				if(is_dir($dir) == true) {
+					$fileperms = fileperms($dir);
+					$perms = substr(sprintf("%o", $fileperms), -4);
+					$col_dir = Widget::TableData(General::sanitize('workspace/xml-importers'));
+					$col_dir->appendChild(Widget::Input("item[/workspace/xml-importers]",null, 'checkbox'));
+					$col_perms = Widget::TableData(General::sanitize($perms));
+					$col_info = Widget::TableData(General::sanitize(info($fileperms)));
+					if($perms != '0777') {
+						$tableBody[] = Widget::TableRow(
+							array(
+								$col_dir, 
+								$col_perms,
+								$col_info
+							),
+							'invalid'
+						);
+					} else {
+						$tableBody[] = Widget::TableRow(
+							array(
+								$col_dir, 
+								$col_perms,
+								$col_info
+							)
+						);
+					}
+				}
+			}
+
 			//array_unique didn't work, so run this function instead
 			function remove_duplicates(array $array){
 				$tmp_array = array();
