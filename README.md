@@ -14,6 +14,8 @@
 
 This allows for easy checking of directories that require read/write permissions.
 
+This also allows for integration with (Nick Dunn's Dashboad extension)[https://github.com/nickdunn/dashboard]. Simply add the Health Check Panel on the Dashboard page to display directories.
+
 It lists your manifest/cache and manifest/tmp folders as well as any directories specified in any section using the inbuilt Upload Field or the Unique Upload Field.
 
 - **0600** Read and write for owner, nothing for everybody else
