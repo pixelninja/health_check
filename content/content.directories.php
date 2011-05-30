@@ -106,40 +106,39 @@
 		   	foreach($directory as $dir) {
 				$d = getcwd() . __($dir);
 				if(is_dir($d) == true) {
-					$fileperms = fileperms($d);
-					$perms = substr(sprintf("%o", $fileperms), -4);
-					$td_dir = Widget::TableData(General::sanitize(__($dir)));
-					$td_dir->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
-					$td_perms = Widget::TableData(General::sanitize($perms));
-					$td_info = Widget::TableData(General::sanitize(info($fileperms)));
-					if($perms != '0777') {
+					$permissions = substr(sprintf("%o", fileperms($d)), -4);
+					$td_directory = Widget::TableData(General::sanitize(__($dir)));
+					$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
+					$td_permissions = Widget::TableData(General::sanitize($permissions));
+					$td_full = Widget::TableData(General::sanitize(info(fileperms($d))));
+					if($permissions != '0777') {
 						$tableBody[] = Widget::TableRow(
 							array(
-								$td_dir, 
-								$td_perms,
-								$td_info
+								$td_directory, 
+								$td_permissions,
+								$td_full
 							),
 							'invalid'
 						);
 					} else {
 						$tableBody[] = Widget::TableRow(
 							array(
-								$td_dir, 
-								$td_perms,
-								$td_info
+								$td_directory, 
+								$td_permissions,
+								$td_full
 							)
 						);
 					}
 				} else {
-					$td_dir = Widget::TableData(General::sanitize(__($dir)));
-					$td_dir->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
-					$td_perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
-					$td_info = Widget::TableData(General::sanitize());
+					$td_directory = Widget::TableData(General::sanitize(__($dir)));
+					$td_directory->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
+					$td_permissions = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
+					$td_full = Widget::TableData(General::sanitize());
 					$tableBody[] = Widget::TableRow(
 						array(
-							$td_dir, 
-							$td_perms,
-							$td_info
+							$td_directory, 
+							$td_permissions,
+							$td_full
 						),
 						'invalid'
 					);
@@ -147,7 +146,7 @@
 			}
 			
 			$table = Widget::Table(
-				Widget::TableHead($tableHead), null, 
+				Widget::TableHead($tableHead), 
 				Widget::TableBody($tableBody)
 			);
 			$table->setAttribute('class', 'selectable');

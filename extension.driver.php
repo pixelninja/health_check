@@ -81,11 +81,8 @@
 
 			function remove_duplicates(array $array){
 				$tmp_array = array();
-
 				foreach($array as $key => $val) {
-					if (!in_array($val, $tmp_array)) {
-						$tmp_array[$key]  = $val;
-					}
+					if (!in_array($val, $tmp_array)) $tmp_array[$key]  = $val;
 				}
 
 				return $tmp_array;
@@ -94,26 +91,25 @@
 			$div = new XMLElement('div');
 			$table = new XMLElement('table');
 
-		   	$dir = array('/manifest/cache','/manifest/tmp');
-			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $dir[] =  '/workspace/xml-importers';
-			foreach(remove_duplicates($destinations) as $destination) $dir[] = $destination['destination'];
+		   	$directory = array('/manifest/cache','/manifest/tmp');
+			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
+			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 
-		   	foreach($dir as $d) {
-				$directory = getcwd() . __($d);
-				if(is_dir($directory) == true) {
-					$fileperms = fileperms($directory);
-					$perms = substr(sprintf("%o", $fileperms), -4);
-					$td_directory = Widget::TableData(General::sanitize(__($d)));
-					$td_perms = Widget::TableData(General::sanitize($perms));
-					if($perms != '0777') {
-						$table->appendChild(Widget::TableRow(array($td_directory, $td_perms),'invalid'));
+		   	foreach($directory as $dir) {
+				$d = getcwd() . __($dir);
+				if(is_dir($d) == true) {
+					$permissions = substr(sprintf("%o", fileperms($d)), -4);
+					$td_directory = Widget::TableData(General::sanitize(__($dir)));
+					$td_permissions = Widget::TableData(General::sanitize($permissions));
+					if($permissions != '0777') {
+						$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions),'invalid'));
 					} else {
-						$table->appendChild(Widget::TableRow(array($td_directory, $td_perms)));
+						$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions)));
 					}
 				} else {
-					$directory = Widget::TableData(General::sanitize(__($d)));
-					$perms = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
-					$table->appendChild(Widget::TableRow(array($directory, $perms),'invalid'));
+					$td_directory = Widget::TableData(General::sanitize(__($dir)));
+					$td_permissions = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
+					$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions),'invalid'));
 				}
 			}
 		   
