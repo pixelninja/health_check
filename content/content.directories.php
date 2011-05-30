@@ -15,8 +15,6 @@
 
 			$this->setPageType('index');
 			$this->setTitle(__('Directory Health Check'));
-
-
 			$this->appendSubheading(__('Health Check'));
 
 			if(is_dir(getcwd() . __('/manifest/cache')) == false || is_dir(getcwd() . __('/manifest/tmp')) == false) {
@@ -111,7 +109,7 @@
 					$fileperms = fileperms($d);
 					$perms = substr(sprintf("%o", $fileperms), -4);
 					$td_dir = Widget::TableData(General::sanitize(__($dir)));
-					$td_dir->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
+					$td_dir->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
 					$td_perms = Widget::TableData(General::sanitize($perms));
 					$td_info = Widget::TableData(General::sanitize(info($fileperms)));
 					if($perms != '0777') {
