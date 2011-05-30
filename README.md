@@ -1,6 +1,6 @@
 # Health check
 
-- Version: 1.0
+- Version: 1.1
 - Author: Phill Gray
 - Build Date: 2011-05-13
 - Requirements: Symphony 2.2.1
@@ -14,7 +14,7 @@
 
 This allows for easy checking of directories that require read/write permissions.
 
-This also allows for integration with (Nick Dunn's Dashboad extension)[https://github.com/nickdunn/dashboard]. Simply add the Health Check Panel on the Dashboard page to display directories.
+This also allows for integration with (Nick Dunn's Dashboard extension)[https://github.com/nickdunn/dashboard]. Simply add the Health Check Panel on the Dashboard page to display directories.
 
 It lists your manifest/cache and manifest/tmp folders as well as any directories specified in any section using the inbuilt Upload Field or the Unique Upload Field.
 
