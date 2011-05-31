@@ -5,8 +5,8 @@
 		public function about(){
 			return array(
 				'name' => 'Health Check',
-				'version' => '1.1',
-				'release-date' => '2011-05-11',
+				'version' => '1.1.1',
+				'release-date' => '2011-05-31',
 				'author' => array(
 				 		'name' => 'Phill Gray',
 						'email' => 'phill@randb.com.au'

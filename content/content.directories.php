@@ -108,7 +108,8 @@
 				if(is_dir($d) == true) {
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
-					$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
+					//$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
+					$td_directory->appendChild(Widget::Input("item[{$dir}]", null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));
 					$td_full = Widget::TableData(General::sanitize(info(fileperms($d))));
 					if($permissions != '0777') {
@@ -166,7 +167,7 @@
 			);
 
 			$actions->appendChild(Widget::Select('with-selected', $options));
-			$actions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
+			$actions->appendChild(Widget::Input('action[permissions]', 'Apply', 'submit'));
 			
 			$this->Form->appendChild($actions);
 		}
@@ -174,32 +175,44 @@
 		public function __actionIndex() {
 			$checked = ((isset($_POST['item']) && is_array($_POST['item'])) ? array_keys($_POST['item']) : null);
 			
-			if (is_array($checked) and !empty($checked)) {
-				switch ($_POST['with-selected']) {
-					case '0777':
-						chmod(getcwd() . $checked[0], 0777);
-						break;
-					case '0755':
-						chmod(getcwd() . $checked[0], 0755);
-						break;
-					case '0750':
-						chmod(getcwd() . $checked[0], 0750);
-						break;
-					case '0644':
-						chmod(getcwd() . $checked[0], 0644);
-						break;
-					case '0600':
-						chmod(getcwd() . $checked[0], 0600);
-						break;
+			if(array_key_exists('permissions', $_POST['action'])) {
+				if (is_array($checked) and !empty($checked)) {
+					switch ($_POST['with-selected']) {
+						case '0777':
+							foreach ($checked as $item) {
+								chmod(getcwd() . $item, 0777);
+							}
+							break;
+						case '0755':
+							foreach ($checked as $item) {
+								chmod(getcwd() . $item, 0755);
+							}
+							break;
+						case '0750':
+							foreach ($checked as $item) {
+								chmod(getcwd() . $item, 0750);
+							}
+							break;
+						case '0644':
+							foreach ($checked as $item) {
+								chmod(getcwd() . $item, 0644);
+							}
+							break;
+						case '0600':
+							foreach ($checked as $item) {
+								chmod(getcwd() . $item[0], 0600);
+							}
+							break;
+					}
 				}
 			}
 
-			if(isset($_POST['action']) == 'create-tmp-cache') {
+			if(array_key_exists('create-tmp-cache', $_POST['action'])) {
 				mkdir(getcwd() . '/manifest/tmp', 0777);
 				mkdir(getcwd() . '/manifest/cache', 0777);
-			}elseif(isset($_POST['action']) == 'create-tmp') {
+			}elseif(array_key_exists('create-tmp', $_POST['action'])) {
 				mkdir(getcwd() . '/manifest/tmp', 0777);
-			}elseif(isset($_POST['action']) == 'create-cache') {
+			}elseif(array_key_exists('create-cache', $_POST['action'])) {
 				mkdir(getcwd() . '/manifest/cache', 0777);
 			}
 		}
