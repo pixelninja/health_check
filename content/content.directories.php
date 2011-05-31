@@ -200,7 +200,7 @@
 							break;
 						case '0600':
 							foreach ($checked as $item) {
-								chmod(getcwd() . $item[0], 0600);
+								chmod(getcwd() . $item, 0600);
 							}
 							break;
 					}
