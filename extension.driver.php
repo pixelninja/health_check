@@ -5,7 +5,7 @@
 		public function about(){
 			return array(
 				'name' => 'Health Check',
-				'version' => '1.1.1',
+				'version' => '1.2',
 				'release-date' => '2011-05-31',
 				'author' => array(
 				 		'name' => 'Phill Gray',
@@ -91,13 +91,14 @@
 			$div = new XMLElement('div');
 			$table = new XMLElement('table');
 
-		   	$directory = array('/manifest/cache','/manifest/tmp');
+			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
 			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 
 		   	foreach($directory as $dir) {
 				$d = getcwd() . __($dir);
-				if(is_dir($d) == true) {
+				
+				if(is_dir($d) == true || $dir == '/manifest/config.php') {
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));

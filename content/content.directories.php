@@ -99,17 +99,16 @@
 				return $tmp_array;
 			}
 
-			$directory = array('/manifest/cache','/manifest/tmp');
+			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
 			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 		   
 		   	foreach($directory as $dir) {
 				$d = getcwd() . __($dir);
-				if(is_dir($d) == true) {
+				if(is_dir($d) == true || $dir == '/manifest/config.php') {
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
-					//$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
-					$td_directory->appendChild(Widget::Input("item[{$dir}]", null, 'checkbox'));
+					$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));
 					$td_full = Widget::TableData(General::sanitize(info(fileperms($d))));
 					if($permissions != '0777') {
