@@ -133,7 +133,7 @@
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
 					$td_directory->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
-					$td_full = Widget::TableData(General::sanitize());
+					$td_full = Widget::TableData(General::sanitize(''));
 					$tableBody[] = Widget::TableRow(
 						array(
 							$td_directory, 
@@ -174,45 +174,59 @@
 		public function __actionIndex() {
 			$checked = ((isset($_POST['item']) && is_array($_POST['item'])) ? array_keys($_POST['item']) : null);
 			
-			if(array_key_exists('permissions', $_POST['action'])) {
-				if (is_array($checked) and !empty($checked)) {
-					switch ($_POST['with-selected']) {
-						case '0777':
-							foreach ($checked as $item) {
-								chmod(getcwd() . $item, 0777);
-							}
-							break;
-						case '0755':
-							foreach ($checked as $item) {
-								chmod(getcwd() . $item, 0755);
-							}
-							break;
-						case '0750':
-							foreach ($checked as $item) {
-								chmod(getcwd() . $item, 0750);
-							}
-							break;
-						case '0644':
-							foreach ($checked as $item) {
-								chmod(getcwd() . $item, 0644);
-							}
-							break;
-						case '0600':
-							foreach ($checked as $item) {
-								chmod(getcwd() . $item, 0600);
-							}
-							break;
+			try{
+				if(array_key_exists('permissions', $_POST['action'])) {
+					if (is_array($checked) and !empty($checked)) {
+						switch ($_POST['with-selected']) {
+							case '0777':
+								foreach ($checked as $item) {
+									chmod(getcwd() . $item, 0777);
+								}
+								break;
+							case '0755':
+								foreach ($checked as $item) {
+									chmod(getcwd() . $item, 0755);
+								}
+								break;
+							case '0750':
+								foreach ($checked as $item) {
+									chmod(getcwd() . $item, 0750);
+								}
+								break;
+							case '0644':
+								foreach ($checked as $item) {
+									chmod(getcwd() . $item, 0644);
+								}
+								break;
+							case '0600':
+								foreach ($checked as $item) {
+									chmod(getcwd() . $item, 0600);
+								}
+								break;
+						}
 					}
 				}
+			} catch (Exception $e) 
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: ',  $e->getMessage()),
+					Alert::ERROR
+				);
 			}
-
-			if(array_key_exists('create-tmp-cache', $_POST['action'])) {
-				mkdir(getcwd() . '/manifest/tmp', 0777);
-				mkdir(getcwd() . '/manifest/cache', 0777);
-			}elseif(array_key_exists('create-tmp', $_POST['action'])) {
-				mkdir(getcwd() . '/manifest/tmp', 0777);
-			}elseif(array_key_exists('create-cache', $_POST['action'])) {
-				mkdir(getcwd() . '/manifest/cache', 0777);
+			
+			try{
+				if(array_key_exists('create-tmp-cache', $_POST['action'])) {
+					mkdir(getcwd() . '/manifest/tmp', 0777);
+					mkdir(getcwd() . '/manifest/cache', 0777);
+				}elseif(array_key_exists('create-tmp', $_POST['action'])) {
+					mkdir(getcwd() . '/manifest/tmp', 0777);
+				}elseif(array_key_exists('create-cache', $_POST['action'])) {
+					mkdir(getcwd() . '/manifest/cache', 0777);
+				}
+			} catch (Exception $e) 
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: ',  $e->getMessage()),
+					Alert::ERROR
+				);
 			}
 		}
 	}
