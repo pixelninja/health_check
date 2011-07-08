@@ -206,7 +206,7 @@
 						}
 					}
 				}
-			} catch (Exception $e) 
+			} catch (Exception $e) {
 				Administration::instance()->Page->pageAlert(
 					__('Exception caught: ',  $e->getMessage()),
 					Alert::ERROR
@@ -222,7 +222,7 @@
 				}elseif(array_key_exists('create-cache', $_POST['action'])) {
 					mkdir(getcwd() . '/manifest/cache', 0777);
 				}
-			} catch (Exception $e) 
+			} catch (Exception $e) {
 				Administration::instance()->Page->pageAlert(
 					__('Exception caught: ',  $e->getMessage()),
 					Alert::ERROR
