@@ -5,18 +5,20 @@
 	Class ContentExtensionHealth_CheckDirectories extends AdministrationPage{
 		
 		public function __viewIndex() {		
-			// fetch all entries with upload fields
+			/* FETCH ALL ENTRIES WITH UPLOAD FIELDS */
 			$extensionManager = new ExtensionManager($this->_Parent);
 			if($extensionManager->fetchStatus('uniqueuploadfield') == EXTENSION_ENABLED) {
 				$destinations = Symphony::Database()->fetch("SELECT destination COLLATE utf8_general_ci AS destination FROM tbl_fields_upload UNION ALL SELECT destination FROM tbl_fields_uniqueupload ORDER BY destination ASC");
 			} else {
 				$destinations = Symphony::Database()->fetch("SELECT destination FROM tbl_fields_upload ORDER BY destination ASC");
 			}
-
+			
+			/* SET PAGE TYPE AND TITLE */
 			$this->setPageType('index');
 			$this->setTitle(__('Directory Health Check'));
 			$this->appendSubheading(__('Health Check'));
 			
+			/* APPEND DIRECTORY CREATION BUTTONS IF APPLICABLE */
 			if(is_dir(getcwd() . __('/manifest/cache')) == false || is_dir(getcwd() . __('/manifest/tmp')) == false) {
 				$button = new XMLElement('input');
 				$button->setAttribute('type','submit');
@@ -45,23 +47,33 @@
 			
 			
 			
-			// Find the right permissions for the environment
+			/*@group Find the right permissions for the environment*/
 			$fstat = $dstat = array('uid' => 0, 'gid' => 0);
 	
 			// Get information about newly created directory
-			if (!mkdir('test')) {
+			try{
+				mkdir('test');
+			} catch (Exception $e) {
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: ',  $e->getMessage()),
+					Alert::ERROR
+				);
+				return array();
+			}
+			
+			/*if (!is_dir('test')) {
 				// TODO: throw error here?
 				echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
 				return array();
-			}
+			}*/
 			$dstat = stat('test');
-	
+			
 			// Get information about newly created file
 			if (file_put_contents('test/test.txt', 'test')) {
 				$fstat = stat('test/test.txt');
 				unlink('test/test.txt');
 			}
-	
+
 			// Cleanup
 			rmdir('test');
 	
