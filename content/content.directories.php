@@ -212,6 +212,15 @@
 		// Get information about FTP uploaded file
 		$ftpfstat = stat(__FILE__);
 
+		
+		var_dump($fstat);
+		var_dump($fstat['uid']);
+		var_dump($fstat['gid']);
+		var_dump($ftpfstat);
+		var_dump($ftpfstat['uid']);
+		var_dump($ftpfstat['gid']);
+		
+		
 		// TODO: throw error if $ftp* are not arrays?
 
 		$result = array();
