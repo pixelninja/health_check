@@ -16,7 +16,7 @@
 			$this->setPageType('index');
 			$this->setTitle(__('Directory Health Check'));
 			$this->appendSubheading(__('Health Check'));
-
+			
 			if(is_dir(getcwd() . __('/manifest/cache')) == false || is_dir(getcwd() . __('/manifest/tmp')) == false) {
 				$button = new XMLElement('input');
 				$button->setAttribute('type','submit');
@@ -41,7 +41,74 @@
 				array(__('Directory'), 'col'),
 				array(__('Octal Permissions'), 'col'),
 				array(__('Full Permissions'), 'col')
-			);	
+			);
+			
+			
+			
+			// Find the right permissions for the environment
+			$fstat = $dstat = array('uid' => 0, 'gid' => 0);
+	
+			// Get information about newly created directory
+			if (!mkdir('test')) {
+				// TODO: throw error here?
+				echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
+				return array();
+			}
+			$dstat = stat('test');
+	
+			// Get information about newly created file
+			if (file_put_contents('test/test.txt', 'test')) {
+				$fstat = stat('test/test.txt');
+				unlink('test/test.txt');
+			}
+	
+			// Cleanup
+			rmdir('test');
+	
+			// Get information about FTP uploaded directory
+			$ftpdstat = stat('symphony');
+	
+			// Get information about FTP uploaded file
+			$ftpfstat = stat(__FILE__);
+			
+			// TODO: throw error if $ftp* are not arrays?
+	
+			$result = array();
+			if ($ftpfstat['uid'] == $fstat['uid']) {
+				$result['file'] = '0644';
+			}
+			else if ($ftpfstat['gid'] == $fstat['gid']) {
+				$result['file'] = '0664';
+			}
+			else if (isset($fstat['mode'])) {
+				// TODO: we could check if PHP needs executable flag,
+				//       by creating test.php instead of test.txt,
+				//       and using Gateway to check if it returns correct output.
+				$result['file'] = substr(decoct($fstat['mode']), -3);
+			}
+			else {
+				// Everything failed, so return "default" defaults ;(.
+				$result['file'] = '0644';
+			}
+	
+			if ($ftpdstat['uid'] == $dstat['uid']) {
+				$result['directory'] = '0755';
+			}
+			else if ($ftpdstat['gid'] == $dstat['gid']) {
+				$result['directory'] = '0775';
+			}
+			else if (isset($dstat['mode'])) {
+				// TODO: we could check if PHP needs executable flag,
+				//       by creating test.php instead of test.txt,
+				//       and using Gateway to check if it returns correct output.
+				$result['directory'] = substr(decoct($dstat['mode']), -3);
+			}
+			else {
+				// Everything failed, so return "default" defaults ;(.
+				$result['directory'] = '0755';
+			}
+	
+	
 			
 			//This is horrifically awful to look at but it seems to be the only way to change 0777 to drwxrwxrwx etc		
 			function info($fileperms) {
@@ -111,23 +178,46 @@
 					$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));
 					$td_full = Widget::TableData(General::sanitize(info(fileperms($d))));
-					if($permissions != '0777') {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$td_directory, 
-								$td_permissions,
-								$td_full
-							),
-							'invalid'
-						);
-					} else {
-						$tableBody[] = Widget::TableRow(
-							array(
-								$td_directory, 
-								$td_permissions,
-								$td_full
-							)
-						);
+					if(is_dir($d)) {
+						if($permissions != $result['directory']) {
+							$tableBody[] = Widget::TableRow(
+								array(
+									$td_directory, 
+									$td_permissions,
+									$td_full
+								),
+								'invalid'
+							);
+						} else {
+							$tableBody[] = Widget::TableRow(
+								array(
+									$td_directory, 
+									$td_permissions,
+									$td_full
+								)
+							);
+						}
+					}
+					
+					if(is_file($d)) {
+						if($permissions != $result['file']) {
+							$tableBody[] = Widget::TableRow(
+								array(
+									$td_directory, 
+									$td_permissions,
+									$td_full
+								),
+								'invalid'
+							);
+						} else {
+							$tableBody[] = Widget::TableRow(
+								array(
+									$td_directory, 
+									$td_permissions,
+									$td_full
+								)
+							);
+						}
 					}
 				} else {
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
@@ -144,6 +234,14 @@
 					);
 				}
 			}
+			
+			$recommendation = new XMLElement('div', null, array('class'=>'recommendation'));
+			$recommendation->appendChild(new XMLElement('p', 'Based on basic tests with your server, your recommended permissions are:'));
+			$recommendation->appendChild(new XMLElement('ul'));
+			$recommendation->appendChild(new XMLElement('li', 'Directories: '.$result['directory']));
+			$recommendation->appendChild(new XMLElement('li', 'Files: '.$result['file']));
+			
+			$this->Contents->appendChild($recommendation);
 			
 			$table = Widget::Table(
 				Widget::TableHead($tableHead), 
@@ -169,128 +267,6 @@
 			$actions->appendChild(Widget::Input('action[permissions]', 'Apply', 'submit'));
 			
 			$this->Form->appendChild($actions);
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-	function findPerms() {
-		$fstat = $dstat = array('uid' => 0, 'gid' => 0);
-
-		// Get information about newly created directory
-		if (!mkdir('test')) {
-			// TODO: throw error here?
-			echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
-			return array();
-		}
-		$dstat = stat('test');
-
-		// Get information about newly created file
-		if (file_put_contents('test/test.txt', 'test')) {
-			$fstat = stat('test/test.txt');
-			unlink('test/test.txt');
-		}
-
-		// Cleanup
-		rmdir('test');
-
-		// Get information about FTP uploaded directory
-		$ftpdstat = stat('symphony');
-
-		// Get information about FTP uploaded file
-		$ftpfstat = stat(__FILE__);
-
-		
-		var_dump($fstat);
-		var_dump($fstat['uid']);
-		var_dump($fstat['gid']);
-		var_dump($ftpfstat);
-		var_dump($ftpfstat['uid']);
-		var_dump($ftpfstat['gid']);
-		
-		
-		// TODO: throw error if $ftp* are not arrays?
-
-		$result = array();
-		if ($ftpfstat['uid'] == $fstat['uid']) {
-			$result['file'] = '644';
-		}
-		else if ($ftpfstat['gid'] == $fstat['gid']) {
-			$result['file'] = '664';
-		}
-		else if (isset($fstat['mode'])) {
-			// TODO: we could check if PHP needs executable flag,
-			//       by creating test.php instead of test.txt,
-			//       and using Gateway to check if it returns correct output.
-			$result['file'] = substr(decoct($fstat['mode']), -3);
-		}
-		else {
-			// Everything failed, so return "default" defaults ;(.
-			$result['file'] = '644';
-		}
-
-		if ($ftpdstat['uid'] == $dstat['uid']) {
-			$result['directory'] = '755';
-		}
-		else if ($ftpdstat['gid'] == $dstat['gid']) {
-			$result['directory'] = '775';
-		}
-		else if (isset($dstat['mode'])) {
-			// TODO: we could check if PHP needs executable flag,
-			//       by creating test.php instead of test.txt,
-			//       and using Gateway to check if it returns correct output.
-			$result['directory'] = substr(decoct($dstat['mode']), -3);
-		}
-		else {
-			// Everything failed, so return "default" defaults ;(.
-			$result['directory'] = '755';
-		}
-
-		return $result;
-	}
-
-	var_dump(findPerms());
-
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
 		}
 		
 		public function __actionIndex() {
