@@ -237,10 +237,10 @@
 			
 			$recommendation = new XMLElement('div', null, array('class'=>'recommendation'));
 			$recommendation->appendChild(new XMLElement('p', 'Based on basic tests with your server, your recommended permissions are:'));
-			$recommendation->appendChild(new XMLElement('ul'));
-			$recommendation->appendChild(new XMLElement('li', 'Directories: '.$result['directory']));
-			$recommendation->appendChild(new XMLElement('li', 'Files: '.$result['file']));
-			
+			$recommendation_list = new XMLElement('ul');
+			$recommendation_list->appendChild(new XMLElement('li', 'Directories: '.$result['directory']));
+			$recommendation_list->appendChild(new XMLElement('li', 'Files: '.$result['file']));
+			$recommendation->appendChild($recommendation_list);
 			$this->Contents->appendChild($recommendation);
 			
 			$table = Widget::Table(
