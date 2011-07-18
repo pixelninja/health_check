@@ -55,7 +55,7 @@
 				mkdir('test');
 			} catch (Exception $e) {
 				Administration::instance()->Page->pageAlert(
-					__('Exception caught: ',  $e->getMessage()),
+					__('Exception caught: '.$e->getMessage()),
 					Alert::ERROR
 				);
 				return array();
