@@ -35,7 +35,8 @@
 				}
 				$this->Form->appendChild($button);
 			}
-
+			
+			/* CREATE TABLE */
 			$table = new XMLElement('table');
 
 			$tableBody = array();
@@ -45,12 +46,9 @@
 				array(__('Full Permissions'), 'col')
 			);
 			
-			
-			
-			/*@group Find the right permissions for the environment*/
+			/* FIND THE RIGHT PERMISSIONS FOR THE ENVIRONMENT */
 			$fstat = $dstat = array('uid' => 0, 'gid' => 0);
-	
-			// Get information about newly created directory
+			// Create test directory/file and get information on each
 			try{
 				mkdir('test');
 				$dstat = stat('test');
@@ -63,66 +61,56 @@
 				
 				// Cleanup
 				rmdir('test');
-			} catch (Exception $e) {
+			} 
+			// If directory creation fails, catch the error and alert user
+			catch (Exception $e) {
 				Administration::instance()->Page->pageAlert(
 					__('Exception caught: Health Check could not create a test directory to determine your server permission requirements. Your recommended permissions will default to Symphony recommendations'),
 					Alert::ERROR
 				);
-				return array();
-			}
-			
-			/*if (!is_dir('test')) {
-				// TODO: throw error here?
-				echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
-				return array();
-			}*/
-	
-			// Get information about FTP uploaded directory
+			}	
+			// Get information about FTP uploaded directory/file
 			$ftpdstat = stat('symphony');
-	
-			// Get information about FTP uploaded file
-			$ftpfstat = stat(__FILE__);
+			$ftpfstat = stat('index.php');
 			
-			// TODO: throw error if $ftp* are not arrays?
-	
-			$result = array();
-			if ($ftpfstat['uid'] == $fstat['uid']) {
+			if(is_array($ftpdstat) && is_array($ftpfstat)) {
+				$result = array();
+				if ($ftpfstat['uid'] == $fstat['uid']) {
+					// If user IDs match
+					$result['file'] = '0644';
+				} else if ($ftpfstat['gid'] == $fstat['gid']) {
+					// If group IDs match
+					$result['file'] = '0664';
+				} else if (isset($fstat['mode'])) {
+					$result['file'] = substr(decoct($fstat['mode']), -3);
+				} else {
+					// Everything failed, so return "default" defaults.
+					$result['file'] = '0644';
+				}
+		
+				if ($ftpdstat['uid'] == $dstat['uid']) {
+					// If user IDs match
+					$result['directory'] = '0755';
+				} else if ($ftpdstat['gid'] == $dstat['gid']) {
+					// If group IDs match
+					$result['directory'] = '0775';
+				} else if (isset($dstat['mode'])) {
+					$result['directory'] = substr(decoct($dstat['mode']), -3);
+				} else {
+					// Everything failed, so return "default" defaults.
+					$result['directory'] = '0755';
+				}
+			} else {
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: Health Check could not test against Symphony core files. Your recommended permissions will default to Symphony recommendations'),
+					Alert::ERROR
+				);
+				
 				$result['file'] = '0644';
-			}
-			else if ($ftpfstat['gid'] == $fstat['gid']) {
-				$result['file'] = '0664';
-			}
-			else if (isset($fstat['mode'])) {
-				// TODO: we could check if PHP needs executable flag,
-				//       by creating test.php instead of test.txt,
-				//       and using Gateway to check if it returns correct output.
-				$result['file'] = substr(decoct($fstat['mode']), -3);
-			}
-			else {
-				// Everything failed, so return "default" defaults ;(.
-				$result['file'] = '0644';
-			}
-	
-			if ($ftpdstat['uid'] == $dstat['uid']) {
 				$result['directory'] = '0755';
 			}
-			else if ($ftpdstat['gid'] == $dstat['gid']) {
-				$result['directory'] = '0775';
-			}
-			else if (isset($dstat['mode'])) {
-				// TODO: we could check if PHP needs executable flag,
-				//       by creating test.php instead of test.txt,
-				//       and using Gateway to check if it returns correct output.
-				$result['directory'] = substr(decoct($dstat['mode']), -3);
-			}
-			else {
-				// Everything failed, so return "default" defaults ;(.
-				$result['directory'] = '0755';
-			}
 	
-	
-			
-			//This is horrifically awful to look at but it seems to be the only way to change 0777 to drwxrwxrwx etc		
+			/* THIS IS HORRIBLE TO LOOK AT BUT IT'S THE ONLY METHOD I FOUND TO CHANGE OCTAL INTO 'drwxrwxrwx' ETC */
 			function info($fileperms) {
 				// Socket
 				if (($fileperms & 0xC000) == 0xC000) $info = 's';
@@ -165,7 +153,7 @@
 				return $info;
 			}			
 
-			//array_unique didn't work, so run this function instead
+			/* ARRAY_UNIQUE DIDN'T WORK, SO RUN THIS FUNCTION INSTEAD */
 			function remove_duplicates(array $array){
 				$tmp_array = array();
 
@@ -177,19 +165,26 @@
 
 				return $tmp_array;
 			}
-
+			
+			/* CREATE DIRECTORY ARRAY AND REMOVE DUPLICATES */
 			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
 			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 		   
+			/* FOREACH ITEM IN THE DIRECTORY ARRAY */
 		   	foreach($directory as $dir) {
+		   		// Get full file path of directory
 				$d = getcwd() . __($dir);
+				// Check it is a directory, or the config file
 				if(is_dir($d) == true || $dir == '/manifest/config.php') {
+					// Get permissions of directory
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
+					// Output directory name and permissions in the table, with a uniquely named checkbox (for selecting)
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
 					$td_directory->appendChild(Widget::Input("item[".$dir."]",null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));
 					$td_full = Widget::TableData(General::sanitize(info(fileperms($d))));
+					// Another directory check to recommend correct permissions
 					if(is_dir($d)) {
 						if($permissions != $result['directory']) {
 							$tableBody[] = Widget::TableRow(
@@ -210,7 +205,7 @@
 							);
 						}
 					}
-					
+					// File check to recommend correct permissions
 					if(is_file($d)) {
 						if($permissions != $result['file']) {
 							$tableBody[] = Widget::TableRow(
@@ -232,6 +227,7 @@
 						}
 					}
 				} else {
+					// If there is no file or directory, then it doesn't exist.
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
 					$td_directory->appendChild(Widget::Input("item['.$d.']",null, 'checkbox'));
 					$td_permissions = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
@@ -247,6 +243,7 @@
 				}
 			}
 			
+			/* CREATE RECOMMENDED TEXT ELEMENTS */
 			$recommendation = new XMLElement('div', null, array('class'=>'recommendation'));
 			$recommendation->appendChild(new XMLElement('p', 'Based on basic tests with your server, your recommended permissions are:'));
 			$recommendation_list = new XMLElement('ul');
@@ -255,14 +252,17 @@
 			$recommendation->appendChild($recommendation_list);
 			$this->Contents->appendChild($recommendation);
 			
+			/* APPEND COLUMNS TO THE TABLE */
 			$table = Widget::Table(
 				Widget::TableHead($tableHead), 
 				Widget::TableBody($tableBody)
 			);
 			$table->setAttribute('class', 'selectable');
 			
+			/* APPEND TABLE TO THE PAGE */
 			$this->Form->appendChild($table);	
 			
+			/* CREATE SELECT BOX CONTAINING PERMISSIONS OPTIONS */
 			$actions = new XMLElement('div');
 			$actions->setAttribute('class', 'actions');
 			
