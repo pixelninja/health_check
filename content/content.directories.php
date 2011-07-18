@@ -169,6 +169,123 @@
 			$actions->appendChild(Widget::Input('action[permissions]', 'Apply', 'submit'));
 			
 			$this->Form->appendChild($actions);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+	function findPerms() {
+		$fstat = $dstat = array('uid' => 0, 'gid' => 0);
+
+		// Get information about newly created directory
+		if (!mkdir('test')) {
+			// TODO: throw error here?
+			echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
+			return array();
+		}
+		$dstat = stat('test');
+
+		// Get information about newly created file
+		if (file_put_contents('test/test.txt', 'test')) {
+			$fstat = stat('test/test.txt');
+			unlink('test/test.txt');
+		}
+
+		// Cleanup
+		rmdir('test');
+
+		// Get information about FTP uploaded directory
+		$ftpdstat = stat('symphony');
+
+		// Get information about FTP uploaded file
+		$ftpfstat = stat(__FILE__);
+
+		// TODO: throw error if $ftp* are not arrays?
+
+		$result = array();
+		if ($ftpfstat['uid'] == $fstat['uid']) {
+			echo '1';
+			$result['file'] = '644';
+		}
+		else if ($ftpfstat['gid'] == $fstat['gid']) {
+			echo '2';
+			$result['file'] = '664';
+		}
+		else if (isset($fstat['mode'])) {
+			echo '3';
+			// TODO: we could check if PHP needs executable flag,
+			//       by creating test.php instead of test.txt,
+			//       and using Gateway to check if it returns correct output.
+			$result['file'] = substr(decoct($fstat['mode']), -3);
+		}
+		else {
+			echo '4';
+			// Everything failed, so return "default" defaults ;(.
+			$result['file'] = '644';
+		}
+
+		if ($ftpdstat['uid'] == $dstat['uid']) {
+			$result['directory'] = '755';
+		}
+		else if ($ftpdstat['gid'] == $dstat['gid']) {
+			$result['directory'] = '775';
+		}
+		else if (isset($dstat['mode'])) {
+			// TODO: we could check if PHP needs executable flag,
+			//       by creating test.php instead of test.txt,
+			//       and using Gateway to check if it returns correct output.
+			$result['directory'] = substr(decoct($dstat['mode']), -3);
+		}
+		else {
+			// Everything failed, so return "default" defaults ;(.
+			$result['directory'] = '755';
+		}
+
+		return $result;
+	}
+
+	var_dump(findPerms());
+
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 		}
 		
 		public function __actionIndex() {
