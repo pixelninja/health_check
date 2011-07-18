@@ -19,17 +19,17 @@
 			$this->appendSubheading(__('Health Check'));
 			
 			/* APPEND DIRECTORY CREATION BUTTONS IF APPLICABLE */
-			if(is_dir(getcwd() . __('/manifest/cache')) == false || is_dir(getcwd() . __('/manifest/tmp')) == false) {
+			if(is_dir(getcwd() . '/manifest/cache') == false || is_dir(getcwd() . '/manifest/tmp') == false) {
 				$button = new XMLElement('input');
 				$button->setAttribute('type','submit');
 				$button->setAttribute('class','button');
-				if(is_dir(getcwd() . __('/manifest/cache')) == false && is_dir(getcwd() . __('/manifest/tmp')) == false) {
+				if(is_dir(getcwd() . '/manifest/cache') == false && is_dir(getcwd() . '/manifest/tmp') == false) {
 					$button->setAttribute('name','action[create-tmp-cache]');
 					$button->setAttribute('value',__('Create Cache/Tmp folders'));
-				} elseif(is_dir(getcwd() . __('/manifest/cache')) == false && is_dir(getcwd() . __('/manifest/tmp')) != false) {
+				} elseif(is_dir(getcwd() . '/manifest/cache') == false && is_dir(getcwd() . '/manifest/tmp') != false) {
 					$button->setAttribute('name','action[create-cache]');
 					$button->setAttribute('value',__('Create Cache folder'));
-				} elseif(is_dir(getcwd() . __('/manifest/cache')) != false && is_dir(getcwd() . __('/manifest/tmp')) == false) {
+				} elseif(is_dir(getcwd() . '/manifest/cache') != false && is_dir(getcwd() . '/manifest/tmp') == false) {
 					$button->setAttribute('name','action[create-tmp]');
 					$button->setAttribute('value',__('Create Tmp folder'));
 				}
@@ -188,20 +188,11 @@
 					if(is_dir($d)) {
 						if($permissions != $result['directory']) {
 							$tableBody[] = Widget::TableRow(
-								array(
-									$td_directory, 
-									$td_permissions,
-									$td_full
-								),
-								'invalid'
+								array($td_directory, $td_permissions, $td_full), 'invalid'
 							);
 						} else {
 							$tableBody[] = Widget::TableRow(
-								array(
-									$td_directory, 
-									$td_permissions,
-									$td_full
-								)
+								array($td_directory, $td_permissions, $td_full)
 							);
 						}
 					}
@@ -209,20 +200,11 @@
 					if(is_file($d)) {
 						if($permissions != $result['file']) {
 							$tableBody[] = Widget::TableRow(
-								array(
-									$td_directory, 
-									$td_permissions,
-									$td_full
-								),
-								'invalid'
+								array($td_directory, $td_permissions, $td_full), 'invalid'
 							);
 						} else {
 							$tableBody[] = Widget::TableRow(
-								array(
-									$td_directory, 
-									$td_permissions,
-									$td_full
-								)
+								array($td_directory, $td_permissions, $td_full)
 							);
 						}
 					}
@@ -233,22 +215,17 @@
 					$td_permissions = Widget::TableData(General::sanitize(__('WARNING: This directory does not exist.')));
 					$td_full = Widget::TableData(General::sanitize(''));
 					$tableBody[] = Widget::TableRow(
-						array(
-							$td_directory, 
-							$td_permissions,
-							$td_full
-						),
-						'invalid'
+						array($td_directory, $td_permissions, $td_full), 'invalid'
 					);
 				}
 			}
 			
 			/* CREATE RECOMMENDED TEXT ELEMENTS */
 			$recommendation = new XMLElement('div', null, array('class'=>'recommendation'));
-			$recommendation->appendChild(new XMLElement('p', 'Based on basic tests with your server, your recommended permissions are:'));
+			$recommendation->appendChild(new XMLElement('p', __('Based on basic tests with your server, your recommended permissions are:')));
 			$recommendation_list = new XMLElement('ul');
-			$recommendation_list->appendChild(new XMLElement('li', 'Directories: '.$result['directory']));
-			$recommendation_list->appendChild(new XMLElement('li', 'Files: '.$result['file']));
+			$recommendation_list->appendChild(new XMLElement('li', __('Directories: ').$result['directory']));
+			$recommendation_list->appendChild(new XMLElement('li', __('Files: ').$result['file']));
 			$recommendation->appendChild($recommendation_list);
 			$this->Contents->appendChild($recommendation);
 			
@@ -275,7 +252,7 @@
 				array('0600', false, __('Update to 0600'))									
 			);
 
-			$actions->appendChild(Widget::Select('with-selected', $options));
+			$actions->appendChild(Widget::Select(__('with-selected'), $options));
 			$actions->appendChild(Widget::Input('action[permissions]', 'Apply', 'submit'));
 			
 			$this->Form->appendChild($actions);
@@ -289,29 +266,19 @@
 					if (is_array($checked) and !empty($checked)) {
 						switch ($_POST['with-selected']) {
 							case '0777':
-								foreach ($checked as $item) {
-									chmod(getcwd() . $item, 0777);
-								}
+								foreach ($checked as $item) chmod(getcwd() . $item, 0777);
 								break;
 							case '0755':
-								foreach ($checked as $item) {
-									chmod(getcwd() . $item, 0755);
-								}
+								foreach ($checked as $item) chmod(getcwd() . $item, 0755);
 								break;
 							case '0750':
-								foreach ($checked as $item) {
-									chmod(getcwd() . $item, 0750);
-								}
+								foreach ($checked as $item) chmod(getcwd() . $item, 0750);
 								break;
 							case '0644':
-								foreach ($checked as $item) {
-									chmod(getcwd() . $item, 0644);
-								}
+								foreach ($checked as $item) chmod(getcwd() . $item, 0644);
 								break;
 							case '0600':
-								foreach ($checked as $item) {
-									chmod(getcwd() . $item, 0600);
-								}
+								foreach ($checked as $item) chmod(getcwd() . $item, 0600);
 								break;
 						}
 					}
