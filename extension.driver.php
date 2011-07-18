@@ -88,6 +88,70 @@
 				return $tmp_array;
 			}
 
+			/* FIND THE RIGHT PERMISSIONS FOR THE ENVIRONMENT */
+			$fstat = $dstat = array('uid' => 0, 'gid' => 0);
+			// Create test directory/file and get information on each
+			try{
+				mkdir('test');
+				$dstat = stat('test');
+				
+				// Get information about newly created file
+				if (file_put_contents('test/test.txt', 'test')) {
+					$fstat = stat('test/test.txt');
+					unlink('test/test.txt');
+				}
+				
+				// Cleanup
+				rmdir('test');
+			} 
+			// If directory creation fails, catch the error and alert user
+			catch (Exception $e) {
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: Health Check could not create a test directory to determine your server permission requirements. Your recommended permissions will default to Symphony recommendations'),
+					Alert::ERROR
+				);
+			}	
+			// Get information about FTP uploaded directory/file
+			$ftpdstat = stat('symphony');
+			$ftpfstat = stat('index.php');
+			
+			if(is_array($ftpdstat) && is_array($ftpfstat)) {
+				$result = array();
+				if ($ftpfstat['uid'] == $fstat['uid']) {
+					// If user IDs match
+					$result['file'] = '0644';
+				} else if ($ftpfstat['gid'] == $fstat['gid']) {
+					// If group IDs match
+					$result['file'] = '0664';
+				} else if (isset($fstat['mode'])) {
+					$result['file'] = substr(decoct($fstat['mode']), -3);
+				} else {
+					// Everything failed, so return "default" defaults.
+					$result['file'] = '0644';
+				}
+		
+				if ($ftpdstat['uid'] == $dstat['uid']) {
+					// If user IDs match
+					$result['directory'] = '0755';
+				} else if ($ftpdstat['gid'] == $dstat['gid']) {
+					// If group IDs match
+					$result['directory'] = '0775';
+				} else if (isset($dstat['mode'])) {
+					$result['directory'] = substr(decoct($dstat['mode']), -3);
+				} else {
+					// Everything failed, so return "default" defaults.
+					$result['directory'] = '0755';
+				}
+			} else {
+				Administration::instance()->Page->pageAlert(
+					__('Exception caught: Health Check could not test against Symphony core files. Your recommended permissions will default to Symphony recommendations'),
+					Alert::ERROR
+				);
+				
+				$result['file'] = '0644';
+				$result['directory'] = '0755';
+			}
+
 			$div = new XMLElement('div');
 			$table = new XMLElement('table');
 
@@ -102,10 +166,20 @@
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
 					$td_permissions = Widget::TableData(General::sanitize($permissions));
-					if($permissions != '0777') {
-						$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions),'invalid'));
-					} else {
-						$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions)));
+					if(is_dir($d)) {
+						if($permissions != $result['directory']) {
+							$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions),'invalid'));
+						} else {
+							$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions)));
+						}
+					}
+					// File check to recommend correct permissions
+					if(is_file($d)) {
+						if($permissions != $result['file']) {
+							$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions),'invalid'));
+						} else {
+							$table->appendChild(Widget::TableRow(array($td_directory, $td_permissions)));
+						}
 					}
 				} else {
 					$td_directory = Widget::TableData(General::sanitize(__($dir)));
