@@ -1,8 +1,8 @@
 # Health check
 
-- Version: 1.3
+- Version: 1.4
 - Author: Phill Gray
-- Build Date: 2011-07-08
+- Build Date: 2011-07-18
 - Requirements: Symphony 2.2.1
 
 ## Installation
@@ -13,6 +13,8 @@
 ## Usage
 
 This allows for easy checking of directories that require read/write permissions.
+
+It runs a test against your server to determine the best permissions for your environment. If it fails, then it defaults to Symphony defaults of 0755 for directories and 0644 for files.
 
 This also allows for integration with (Nick Dunn's Dashboard extension)[https://github.com/nickdunn/dashboard]. Simply add the Health Check Panel on the Dashboard page to display directories.
 
