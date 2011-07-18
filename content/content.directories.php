@@ -216,22 +216,18 @@
 
 		$result = array();
 		if ($ftpfstat['uid'] == $fstat['uid']) {
-			echo '1';
 			$result['file'] = '644';
 		}
 		else if ($ftpfstat['gid'] == $fstat['gid']) {
-			echo '2';
 			$result['file'] = '664';
 		}
 		else if (isset($fstat['mode'])) {
-			echo '3';
 			// TODO: we could check if PHP needs executable flag,
 			//       by creating test.php instead of test.txt,
 			//       and using Gateway to check if it returns correct output.
 			$result['file'] = substr(decoct($fstat['mode']), -3);
 		}
 		else {
-			echo '4';
 			// Everything failed, so return "default" defaults ;(.
 			$result['file'] = '644';
 		}
