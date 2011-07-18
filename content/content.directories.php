@@ -53,9 +53,19 @@
 			// Get information about newly created directory
 			try{
 				mkdir('test');
+				$dstat = stat('test');
+				
+				// Get information about newly created file
+				if (file_put_contents('test/test.txt', 'test')) {
+					$fstat = stat('test/test.txt');
+					unlink('test/test.txt');
+				}
+				
+				// Cleanup
+				rmdir('test');
 			} catch (Exception $e) {
 				Administration::instance()->Page->pageAlert(
-					__('Exception caught: '.$e->getMessage()),
+					__('Exception caught: Health Check could not create a test directory to determine your server permission requirements. Your recommended permissions will default to Symphony recommendations'),
 					Alert::ERROR
 				);
 				return array();
@@ -66,16 +76,6 @@
 				echo "ERROR: could not create test directory. Make sure that Symphony can create child directories, at least while installing/updating itself.";
 				return array();
 			}*/
-			$dstat = stat('test');
-			
-			// Get information about newly created file
-			if (file_put_contents('test/test.txt', 'test')) {
-				$fstat = stat('test/test.txt');
-				unlink('test/test.txt');
-			}
-
-			// Cleanup
-			rmdir('test');
 	
 			// Get information about FTP uploaded directory
 			$ftpdstat = stat('symphony');
