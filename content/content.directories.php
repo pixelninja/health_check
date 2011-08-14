@@ -73,6 +73,16 @@
 			$ftpdstat = stat('symphony');
 			$ftpfstat = stat('index.php');
 			
+			var_dump($ftpdstat['uid']);
+			var_dump($dstat['uid']);
+			var_dump($dstat['mode']);
+			var_dump(substr(decoct($dstat['mode']), -3));
+			var_dump($ftpfstat['uid']);
+			var_dump($fstat['uid']);
+			var_dump($fstat['mode']);
+			var_dump(substr(decoct($fstat['mode']), -3));
+			exit;
+			
 			if(is_array($ftpdstat) && is_array($ftpfstat)) {
 				$result = array();
 				if ($ftpfstat['uid'] == $fstat['uid']) {
@@ -167,7 +177,7 @@
 			}
 			
 			/* CREATE DIRECTORY ARRAY AND REMOVE DUPLICATES */
-			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
+			$directory = array('/manifest/cache','/test','/test/test.txt','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
 			if($extensionManager->fetchStatus('xmlimporter') == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 		   
@@ -176,7 +186,7 @@
 		   		// Get full file path of directory
 				$d = getcwd() . __($dir);
 				// Check it is a directory, or the config file
-				if(is_dir($d) == true || $dir == '/manifest/config.php') {
+				if(is_dir($d) == true || $dir == '/manifest/config.php' || $dir == '/test/test.txt') {
 					// Get permissions of directory
 					$permissions = substr(sprintf("%o", fileperms($d)), -4);
 					// Output directory name and permissions in the table, with a uniquely named checkbox (for selecting)
