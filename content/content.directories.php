@@ -38,15 +38,18 @@
 				
 				$ul_actions->appendChild($button);
 			}
-			
-			if(is_dir(getcwd() . '/workspace/xml-importers') == false) {
-				$button = new XMLElement('button', 'Create XML Importers folder');
-				$button->setAttribute('name','action[create-importer]');
-				
-				$button->setAttribute('class','button');
-				$button->setAttribute('type','submit');
-				
-				$ul_actions->appendChild($button);
+
+			$fetchXmlimporter = ExtensionManager::fetchStatus(array('handle' => 'xmlimporter'));
+			if($fetchXmlimporter[0] == EXTENSION_ENABLED) {
+				if(is_dir(getcwd() . '/workspace/xml-importers') == false) {
+					$button = new XMLElement('button', 'Create XML Importers folder');
+					$button->setAttribute('name','action[create-importer]');
+					
+					$button->setAttribute('class','button');
+					$button->setAttribute('type','submit');
+					
+					$ul_actions->appendChild($button);
+				}
 			}
 			
 			$this->Context->appendChild($ul_actions);
@@ -182,8 +185,8 @@
 			}
 			
 			/* CREATE DIRECTORY ARRAY AND REMOVE DUPLICATES */
-			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
-			$fetchXmlimporter = ExtensionManager::fetchStatus(array('handle' => 'xmlimporter'));
+			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/','/workspace/uploads/');
+			// $fetchXmlimporter = ExtensionManager::fetchStatus(array('handle' => 'xmlimporter'));
 			if($fetchXmlimporter[0] == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 		   

@@ -133,7 +133,7 @@
 			
 			$fetchXmlimporter = ExtensionManager::fetchStatus(array('handle' => 'xmlimporter'));
 
-			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/');
+			$directory = array('/manifest/cache','/manifest/tmp','/manifest/config.php','/workspace/data-sources/','/workspace/events/','/workspace/uploads/');
 			if($fetchXmlimporter[0] == EXTENSION_ENABLED) $directory[] =  '/workspace/xml-importers';
 			foreach(remove_duplicates($destinations) as $destination) $directory[] = $destination['destination'];
 
